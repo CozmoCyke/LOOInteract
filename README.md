@@ -1,51 +1,48 @@
 # LOOInteract
 
+![Status](https://img.shields.io/badge/status-experimental-orange)
+![Python](https://img.shields.io/badge/python-planned-blue)
+![BLE](https://img.shields.io/badge/protocol-BLE-informational)
+![Platform](https://img.shields.io/badge/platform-LOOI-lightgrey)
+
 **LOOInteract** is a reverse-engineering, experimentation, and open API development project for the **LOOI robot**.
 
-## Objective
+Its purpose is to turn LOOI into a **programmable robotic platform** by documenting its BLE protocol, reproducing the required handshake, and building a clean Python API before any Android MVP.
 
-The goal of this project is to understand, document, and properly use the LOOI BLE protocol in order to:
+---
 
-- connect to the robot;
-- reproduce the required handshake;
-- send movement commands;
-- control the neck, lamp, and other hardware features;
-- read sensors and robot state;
-- build a clean and reusable Python API;
-- later prepare a scriptable Android application.
+## Overview
 
-## Vision
+LOOI is not treated here as a simple gadget, but as a **robotic body driven by a smartphone**.
 
-LOOI is not seen here as a simple gadget, but as a **robotic body driven by a smartphone**.  
-The goal is to turn this robot into a **programmable, educational, and extensible platform**.
+This project focuses on understanding and exposing the robot’s low-level capabilities in a structured way, so they can later be used by:
 
-## Project Principles
+- a Python SDK,
+- a scripting layer,
+- and eventually a custom Android application.
 
-- Understand before coding.
-- Isolate the handshake.
-- Build a minimal but clean Python API first.
-- Do not depend on the official app.
-- Document every discovery precisely.
-- Separate BLE transport, protocol, commands, and application logic.
+---
 
-## Roadmap
+## Goals
 
-1. Map the known BLE characteristics.
-2. Understand and reproduce the handshake.
-3. Test simple commands:
-   - lamp
-   - neck
-   - slow movement
-   - sensor reading
-4. Build a stable Python client.
-5. Add a scripting layer.
-6. Consider an Android port afterwards.
+The main goals of this project are to:
+
+- connect to the LOOI robot over BLE;
+- understand and reproduce the required handshake;
+- send movement and hardware commands;
+- control the neck, lamp, and other exposed features;
+- read sensor and robot state data;
+- build a clean, reusable Python API;
+- prepare a future scripting system;
+- keep the project independent from the official application.
+
+---
 
 ## Current Status
 
-The project is in its initial phase.
+This project is in its **early experimental phase**.
 
-The first identified building blocks are:
+So far, the following building blocks have been identified:
 
 - main command characteristic: `fe00`
 - other known characteristics:
@@ -55,50 +52,52 @@ The first identified building blocks are:
   - `fed9`
   - `ff02`
 
-Some commands and hypotheses come from public reverse-engineering work, but they still need experimental validation.
+Some command mappings and protocol hypotheses come from public reverse-engineering work, but they still need direct experimental validation.
+
+---
+
+## Project Principles
+
+LOOInteract follows a few strict design principles:
+
+- **Understand before coding**
+- **Isolate the handshake**
+- **Build Python first**
+- **Avoid dependency on the official app**
+- **Document discoveries precisely**
+- **Separate transport, protocol, commands, and behavior**
+
+The idea is to avoid mixing reverse engineering, UI, scripting, and app logic too early.
+
+---
+
+## Technical Roadmap
+
+The intended roadmap is:
+
+1. Map the known BLE characteristics
+2. Understand and reproduce the handshake
+3. Validate simple commands:
+   - lamp
+   - neck
+   - slow movement
+   - sensor reading
+4. Build a stable Python client
+5. Add a scripting layer
+6. Only then consider an Android MVP
+
+---
 
 ## Planned Architecture
 
-The repository is expected to evolve toward a structure including:
+The repository is expected to evolve toward something like this:
 
-- protocol documentation
-- reverse-engineering notes and captures
-- Python API
-- CLI testing tools
-- experimentation scripts
-- later, a scripting engine and an Android interface
-
-## Technical Philosophy
-
-This project follows this order:
-
-1. Functional Python API
-2. Clean command abstraction
-3. Scripting engine
-4. Only then an Android MVP
-
-This makes it possible to validate the protocol without mixing BLE, UI, and advanced logic too early.
-
-## Warning
-
-This project is experimental.  
-The LOOI protocol is not yet fully documented.  
-Some hypotheses may change.  
-Tests must be performed carefully to avoid unexpected robot movements.
-
-## Project Name
-
-**LOOInteract** = **LOOI + Interaction + Programmable Interface**
-
-## Author
-
-Project initiated by **CozmoCyke**.
-
-## License
-
-To be defined.
-
-## Notes
-
-This `README.md` is an initial foundation.  
-It will be expanded as the protocol becomes clearer and the Python API matures.
+```text
+LOOInteract/
+├─ docs/                # protocol notes, reverse-engineering docs
+├─ captures/            # BLE captures and raw observations
+├─ looi/                # Python package
+├─ examples/            # quick tests and demos
+├─ tools/               # helper scripts
+├─ tests/               # unit and protocol tests
+└─ README.md
