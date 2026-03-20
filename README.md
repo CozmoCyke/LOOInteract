@@ -101,3 +101,169 @@ LOOInteract/
 ├─ tools/               # helper scripts
 ├─ tests/               # unit and protocol tests
 └─ README.md
+
+# Temporary Results
+
+## Stable BLE Mode Observed on Our LOOI
+
+After pressing the **Touch button**, our LOOI exposes a stable BLE endpoint at:
+
+`6D:46:AF:87:31:1D`
+
+This is the BLE profile we have actually observed and tested on Windows.
+
+### Known Characteristics (Stable Mode)
+
+| UUID Prefix | Observed Function | Notes |
+| --- | --- | --- |
+| **fed4** | **Read buffer / raw state** | Always returns a large block of `00` bytes in current tests. |
+| **fed5** | **Structured command write** | Valid write channel with response. |
+| **fed6** | **Indicate / read** | Subscription works, but no useful payload has been observed yet. |
+| **fed7** | **Structured command write (no response)** | Valid write channel, behavior very similar to `fed5`. |
+| **fed8** | **Ack / status notify-read channel** | Main observable feedback channel in stable mode. |
+
+## Important Difference from Other Reverse-Engineering Notes
+
+Some external notes describe a LOOI command interface using:
+
+- `fe00` as the main command write characteristic
+- `fed0` for movement
+- `fed1` for neck/head control
+- `fed2` for headlight
+- `fed9` for telemetry
+
+**We do not observe those characteristics on our stable BLE endpoint.**
+
+Instead, our tested stable mode uses:
+
+- `fed5` and `fed7` for writes
+- `fed8` for observable acknowledgements/status
+
+So, while some **raw command frames may still be compatible**, the **BLE transport layer is different** in our setup.
+
+## Known Valid Structured Frame
+
+The following frame is accepted and recognized by our stable endpoint:
+
+`00100000010032030a0001ff00010a3203ff0003`
+
+This is the same raw frame that other reverse-engineering notes label as:
+
+`fe00 SLOW RECENTER HEAD`
+
+### What this means in our version
+
+- The **raw frame itself matches**
+- But the **write channel is different**
+- In our setup, it is sent through:
+  - `fed5` (write with response)
+  - `fed7` (write without response)
+- The main observed feedback comes from:
+  - `fed8` (notify/read)
+
+### Important caveat
+
+Although this frame is clearly **recognized** by our device, we do **not yet have proof** that it produces the same physical neck movement as described elsewhere.
+
+So the correct statement is:
+
+> The frame is protocol-compatible, but the physical effect is not yet confirmed to be identical in our stable BLE mode.
+
+## What We Have Learned About the Frame Structure
+
+Using controlled mutation tests, we found the following:
+
+### Byte 1 is critical
+
+Base frame:
+
+`00 10 00 00 01 00 32 03 0a 00 01 ff 00 01 0a 32 03 ff 00 03`
+
+If **byte 1** (`10`) is changed, the frame stops triggering any `fed8` notification.
+
+This strongly suggests that **byte 1 is a critical validity/type field**.
+
+### Byte 0 is variable
+
+If **byte 0** is changed, the frame is still accepted and `fed8` returns a structured response.
+
+This suggests that **byte 0 is likely a command variant / opcode / command index field**.
+
+## Observed ACK Behavior on `fed8`
+
+For the base frame family, mutating byte 0 changes the `fed8` response:
+
+| Sent Byte 0 | `fed8` Response Prefix |
+| --- | --- |
+| `01` | `01110010...` |
+| `03` | `03110010...` |
+| `0a` | `0a110010...` |
+| `10` | `00110010...` |
+| `32` | `02110010...` |
+| `ff` | `0f110010...` |
+
+This means `fed8` is **not just a static battery value**.  
+It behaves more like:
+
+- a structured ACK
+- a transformed status code
+- or a partial mirror of the command interpreted by the device
+
+## Current Working Model
+
+### Stable Mode Command Path
+
+- **Write commands**
+  - `fed5`
+  - `fed7`
+
+- **Read/notify acknowledgement**
+  - `fed8`
+
+- **Unused / not yet useful**
+  - `fed4`
+  - `fed6`
+
+### Frame interpretation hypothesis
+
+| Byte Index | Likely Role | Confidence |
+| --- | --- | --- |
+| **0** | Command variant / opcode / command selector | Medium |
+| **1** | Critical type / validity / class field | High |
+| **2..19** | Command parameters | Medium |
+| **fed8 payload** | Structured ACK / interpreted status | High |
+
+## Recommended Documentation Wording
+
+Instead of writing:
+
+> The primary write characteristic is `fe00`.
+
+For our version, it is more accurate to write:
+
+> On our stable LOOI BLE endpoint, the main observed write characteristics are `fed5` and `fed7`, while `fed8` acts as the primary acknowledgement/status channel.
+
+And instead of using the generic characteristic table from other notes, we should document:
+
+| UUID Prefix | Function | Notes |
+| --- | --- | --- |
+| **fed4** | **Read buffer / raw state** | Observed as all-zero data in current tests. |
+| **fed5** | **Structured command write** | Valid command channel with response. |
+| **fed6** | **Indicate / read** | Subscription works, but no useful payload observed yet. |
+| **fed7** | **Structured command write (no response)** | Valid command channel, behavior close to `fed5`. |
+| **fed8** | **ACK / status notify-read channel** | Main observable feedback channel in stable mode. |
+
+## Summary
+
+Our current reverse-engineering results strongly suggest that:
+
+- the stable endpoint `6D:46:AF:87:31:1D` is a real LOOI BLE interface
+- it appears after **Touch button activation**
+- it accepts structured command frames on `fed5` and `fed7`
+- it returns structured acknowledgements on `fed8`
+- at least one known external command frame is recognized
+- but direct physical control of motors/LEDs is **not yet proven** in this stable mode
+
+So the safest conclusion is:
+
+> Our LOOI stable BLE mode appears protocol-compatible with at least part of the known command frame family, but it uses a different visible GATT interface than the one described in some other reverse-engineering notes.
