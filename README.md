@@ -102,7 +102,7 @@ LOOInteract/
 ├─ tests/               # unit and protocol tests
 └─ README.md
 
-# Temporary Results
+## Temporary Results
 
 ## Stable BLE Mode Observed on Our LOOI
 
