@@ -1,0 +1,87 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Compiled extensions
+*.so
+*.pyd
+*.dll
+
+# Packaging
+.Python
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / editors
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and debug
+*.log
+logs/
+
+# Local config / secrets
+.env
+.env.*
+*.local
+
+# BLE captures / experimental dumps
+captures/raw/
+captures/tmp/
+*.pcap
+*.pcapng
+*.bin
+*.dump
+
+# Python build metadata
+.python-version
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Optional generated docs
+site/
+docs/_build/
